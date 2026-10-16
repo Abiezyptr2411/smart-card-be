@@ -6,22 +6,15 @@ spring:
     name: card-smart-track
   
   datasource:
-    url: jdbc:h2:mem:cardsmarttrackdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driverClassName: org.h2.Driver
-    username: sa
-    password: password
-  
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-      settings:
-        web-allow-others: false
+    url: jdbc:mysql://localhost:3306/cardsmarttrackdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Jakarta
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: briuser
+    password: bripassword
   
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:

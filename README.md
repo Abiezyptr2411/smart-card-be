@@ -37,7 +37,7 @@ Backend ini menyediakan 3 kapabilitas utama:
 - **Framework**: Spring Boot 3.4.3
 - **Build Tool**: Apache Maven 3.9+ dengan Maven Wrapper (`mvnw` / `mvnw.cmd`)
 - **Keamanan & Autentikasi**: Spring Security 6 & Stateless JWT (JJWT 0.12.6)
-- **Basis Data**: H2 In-Memory Database (data otomatis terisi saat startup, tanpa perlu instalasi database terpisah)
+- **Basis Data**: MySQL 8.0 via Docker Compose (ringan, data tersimpan persisten di volume Docker)
 - **Akses Data**: Spring Data JPA & Hibernate ORM
 - **Dokumentasi Interaktif**: Springdoc OpenAPI 2.8.6 (Swagger UI 3.0)
 - **Validasi Data**: Jakarta Validation / Hibernate Validator
@@ -48,18 +48,21 @@ Backend ini menyediakan 3 kapabilitas utama:
 ## 3. Prasyarat Sistem
 Sebelum menjalankan aplikasi, pastikan komputer Anda telah terpasang:
 - **Java Development Kit (JDK)**: Versi 21 atau lebih baru (`java -version`)
+- **Docker & Docker Compose**: Untuk menjalankan database MySQL (`docker --version` & `docker compose version`)
 - *(Opsional)* **Apache Maven**: Jika tidak ada, Anda cukup menggunakan Maven Wrapper bawaan project (`mvnw` / `mvnw.cmd`).
 
 ---
 
 ## 4. Langkah Cepat Menjalankan Backend
 
-### Langkah 1: Masuk ke Direktori Project
+### Langkah 1: Jalankan Database MySQL via Docker
+Di terminal, jalankan perintah berikut untuk menyalakan MySQL 8:
 ```bash
-cd credit-card-be
+docker compose up -d
 ```
+Container MySQL (`cardsmarttrack-mysql`) akan otomatis menyala di background pada port `3306`.
 
-### Langkah 2: Jalankan Aplikasi
+### Langkah 2: Jalankan Aplikasi Spring Boot
 Pilih perintah yang sesuai dengan terminal Anda:
 
 **Opsi A — Menggunakan Maven Wrapper (Direkomendasikan)**
@@ -513,14 +516,19 @@ app:
 
 ---
 
-## 11. Akses H2 Database Console
+## 11. Akses Database MySQL (via DBeaver / Workbench / TablePlus)
 
-Anda dapat melihat struktur tabel dan query data langsung via web console:
-- **URL**: [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
-- **Driver Class**: `org.h2.Driver`
-- **JDBC URL**: `jdbc:h2:mem:cardsmarttrackdb`
-- **User Name**: `sa`
-- **Password**: `password`
+Database MySQL berjalan di dalam container Docker dan dapat diakses menggunakan database tool favorit Anda (DBeaver, MySQL Workbench, TablePlus, atau Navicat):
+- **Host**: `localhost` (atau `127.0.0.1`)
+- **Port**: `3306`
+- **Database**: `cardsmarttrackdb`
+- **Username**: `briuser` *(atau `root`)*
+- **Password**: `bripassword` *(atau `rootpassword`)*
+
+Perintah CLI untuk masuk ke MySQL container:
+```bash
+docker exec -it cardsmarttrack-mysql mysql -u briuser -pbripassword cardsmarttrackdb
+```
 
 ---
 
