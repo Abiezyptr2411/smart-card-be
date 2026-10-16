@@ -1,0 +1,324 @@
+{
+  "info": {
+    "name": "BRI Card Smart Track API",
+    "_postman_id": "bri-card-smart-track-collection",
+    "description": "Collection Postman untuk backend REST API BRI Card Smart Track. Dilengkapi dengan token extractor otomatis pada endpoint login sehingga request berikutnya langsung terautentikasi.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Login Nasabah Utama (Budi)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.data && json.data.token) {",
+                  "        pm.collectionVariables.set('token', json.data.token);",
+                  "        console.log('JWT Token saved successfully to collection variable {{token}}');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nasabah@bri.co.id\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login menggunakan akun nasabah utama. Token JWT akan otomatis tersimpan di variable {{token}}."
+          }
+        },
+        {
+          "name": "Login Nasabah Lain (Siti - Demo Cross User)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"siti@bri.co.id\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login menggunakan akun nasabah kedua (Siti) untuk menguji skenario 403 Forbidden ketika mencoba mengakses kartu nasabah lain."
+          }
+        },
+        {
+          "name": "Get Profile Nasabah Saat Ini",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Mengambil info profil nasabah yang sedang login."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Credit Cards",
+      "item": [
+        {
+          "name": "Get Daftar Kartu Kredit Nasabah",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cards",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cards"]
+            },
+            "description": "Mengambil seluruh kartu kredit milik nasabah yang sedang login. Nomor kartu otomatis dimasking (contoh: **** **** **** 4321)."
+          }
+        },
+        {
+          "name": "Get Detail Satu Kartu Kredit",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cards/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cards", "1"]
+            },
+            "description": "Mengambil detail kartu kredit ID 1 milik nasabah yang login."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Subscriptions",
+      "item": [
+        {
+          "name": "Get Daftar Subscription pada Kartu",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cards/1/subscriptions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cards", "1", "subscriptions"]
+            },
+            "description": "Mengambil daftar seluruh subscription (Netflix, Spotify, Google One) pada Kartu ID 1."
+          }
+        },
+        {
+          "name": "Get Subscription Aktif Saja (Filter Status)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cards/1/subscriptions?status=ACTIVE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cards", "1", "subscriptions"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ACTIVE"
+                }
+              ]
+            },
+            "description": "Filter opsional untuk hanya mengambil subscription berstatus ACTIVE."
+          }
+        },
+        {
+          "name": "Unsubscribe Layanan (ID 1 - Netflix)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/1/unsubscribe",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscriptions", "1", "unsubscribe"]
+            },
+            "description": "Membatalkan langganan (unsubscribe). Status subscription akan berubah menjadi INACTIVE."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Error Scenarios & Security",
+      "item": [
+        {
+          "name": "401 Unauthorized (Tanpa Token)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cards",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cards"]
+            },
+            "description": "Mengakses endpoint secured tanpa token Bearer menghasilkan HTTP 401."
+          }
+        },
+        {
+          "name": "403 Forbidden (Akses Kartu Nasabah Lain)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cards/4",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cards", "4"]
+            },
+            "description": "Nasabah Budi mencoba mengakses kartu ID 4 milik Siti menghasilkan HTTP 403 Forbidden."
+          }
+        },
+        {
+          "name": "403 Forbidden (Unsubscribe Layanan Nasabah Lain)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/10/unsubscribe",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscriptions", "10", "unsubscribe"]
+            },
+            "description": "Nasabah Budi mencoba unsubscribe Canva (ID 10) milik Siti menghasilkan HTTP 403 Forbidden."
+          }
+        },
+        {
+          "name": "404 Not Found (Kartu Tidak Ada)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cards/999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cards", "999"]
+            },
+            "description": "Mengakses kartu dengan ID 999 yang tidak ada menghasilkan HTTP 404 Not Found."
+          }
+        },
+        {
+          "name": "409 Conflict (Unsubscribe Layanan yang Sudah Nonaktif)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/9/unsubscribe",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscriptions", "9", "unsubscribe"]
+            },
+            "description": "Subscription ID 9 (Gramedia Digital) sudah berstatus INACTIVE di seed data, sehingga menghasilkan HTTP 409 Conflict."
+          }
+        },
+        {
+          "name": "400 Bad Request (Validasi Login Gagal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"email-tidak-valid\",\n  \"password\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Email format salah dan password kosong menghasilkan HTTP 400 Bad Request dengan detail field error."
+          }
+        }
+      ]
+    }
+  ]
+}
