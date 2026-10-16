@@ -203,7 +203,51 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "subscriptions", "1", "unsubscribe"]
             },
-            "description": "Membatalkan langganan (unsubscribe). Status subscription akan berubah menjadi INACTIVE."
+            "description": "Membatalkan langganan (unsubscribe). Status subscription akan berubah menjadi INACTIVE on the fly."
+          }
+        },
+        {
+          "name": "Subscribe Kembali Layanan Nonaktif (ID 9 - Gramedia)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/9/subscribe",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscriptions", "9", "subscribe"]
+            },
+            "description": "Mengaktifkan kembali langganan yang sebelumnya di-unsubscribe (status berubah menjadi ACTIVE on the fly)."
+          }
+        },
+        {
+          "name": "Subscribe Layanan Baru pada Kartu ID 1 (Disney+)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceName\": \"Disney+ Hotstar\",\n  \"category\": \"ENTERTAINMENT\",\n  \"billingAmount\": 65000.00,\n  \"billingPeriod\": \"MONTHLY\",\n  \"description\": \"Paket Bulanan Standard\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cards/1/subscriptions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cards", "1", "subscriptions"]
+            },
+            "description": "Menambahkan layanan subscription baru pada kartu kredit ID 1 secara on the fly."
           }
         }
       ]

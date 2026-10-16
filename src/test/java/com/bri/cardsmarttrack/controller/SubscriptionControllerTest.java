@@ -182,4 +182,30 @@ class SubscriptionControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.message").value(containsString("tidak ditemukan")));
     }
+
+    @Test
+    @DisplayName("POST /api/subscriptions/{id}/subscribe berhasil mengembalikan 200 dan status ACTIVE")
+    void testSubscribe_Success_Returns200() throws Exception {
+        SubscriptionResponse subscribed = SubscriptionResponse.builder()
+                .id(9L)
+                .cardId(3L)
+                .serviceName("Gramedia Digital Premium")
+                .category(SubscriptionCategory.EDUCATION)
+                .billingAmount(new BigDecimal("89000.00"))
+                .billingPeriod(SubscriptionBillingPeriod.MONTHLY)
+                .nextBillingDate(LocalDate.now().plusMonths(1))
+                .status(SubscriptionStatus.ACTIVE)
+                .build();
+
+        when(subscriptionService.subscribe(eq(9L), eq(1L))).thenReturn(subscribed);
+
+        mockMvc.perform(post("/api/subscriptions/9/subscribe")
+                        .with(user(userPrincipal))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value(containsString("Berhasil mengaktifkan kembali langganan")))
+                .andExpect(jsonPath("$.data.status").value("ACTIVE"));
+    }
 }
+

@@ -391,7 +391,7 @@ Mengambil daftar langganan aktif maupun riwayat nonaktif pada kartu kredit terte
 ---
 
 ### 4. POST /api/subscriptions/{id}/unsubscribe
-Membatalkan layanan langganan tertentu. Status subscription berubah menjadi `INACTIVE` dan dicatat waktu pembatalannya.
+Membatalkan layanan langganan tertentu secara *on the fly*. Status subscription berubah menjadi `INACTIVE` dan dicatat waktu pembatalannya.
 
 - **Header**: `Authorization: Bearer <TOKEN>`
 - **Path Parameter**: `id` (contoh: `1`)
@@ -414,6 +414,71 @@ Membatalkan layanan langganan tertentu. Status subscription berubah menjadi `INA
       "unsubscribedAt": "2026-10-16T10:20:15.654321"
     },
     "timestamp": "2026-10-16T10:20:15"
+  }
+  ```
+
+---
+
+### 5. POST /api/subscriptions/{id}/subscribe
+Mengaktifkan kembali langganan yang sebelumnya dinonaktifkan secara *on the fly*. Status subscription berubah kembali menjadi `ACTIVE`.
+
+- **Header**: `Authorization: Bearer <TOKEN>`
+- **Path Parameter**: `id` (contoh: `9` untuk Gramedia Digital)
+- **Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Berhasil mengaktifkan kembali langganan (subscribe)",
+    "data": {
+      "id": 9,
+      "cardId": 3,
+      "serviceName": "Gramedia Digital Premium",
+      "category": "EDUCATION",
+      "billingAmount": 89000.00,
+      "billingPeriod": "MONTHLY",
+      "nextBillingDate": "2026-11-16",
+      "status": "ACTIVE",
+      "logoUrl": "https://ebooks.gramedia.com/favicon.ico",
+      "description": "Paket Majalah & Buku Digital",
+      "unsubscribedAt": null
+    },
+    "timestamp": "2026-10-16T10:25:00"
+  }
+  ```
+
+---
+
+### 6. POST /api/cards/{cardId}/subscriptions
+Menambahkan layanan langganan baru pada kartu kredit tertentu secara *on the fly*.
+
+- **Header**: `Content-Type: application/json`, `Authorization: Bearer <TOKEN>`
+- **Path Parameter**: `cardId` (contoh: `1`)
+- **Request Body**:
+  ```json
+  {
+    "serviceName": "Disney+ Hotstar",
+    "category": "ENTERTAINMENT",
+    "billingAmount": 65000.00,
+    "billingPeriod": "MONTHLY",
+    "description": "Paket Bulanan Standard"
+  }
+  ```
+- **Response (201 Created)**:
+  ```json
+  {
+    "success": true,
+    "message": "Berhasil menambahkan langganan baru pada kartu",
+    "data": {
+      "id": 12,
+      "cardId": 1,
+      "serviceName": "Disney+ Hotstar",
+      "category": "ENTERTAINMENT",
+      "billingAmount": 65000.00,
+      "billingPeriod": "MONTHLY",
+      "nextBillingDate": "2026-11-16",
+      "status": "ACTIVE"
+    },
+    "timestamp": "2026-10-16T10:30:00"
   }
   ```
 

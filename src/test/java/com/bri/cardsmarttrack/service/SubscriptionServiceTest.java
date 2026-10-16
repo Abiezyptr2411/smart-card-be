@@ -174,12 +174,56 @@ class SubscriptionServiceTest {
     }
 
     @Test
-    @DisplayName("Ambil subscriptions melempar 404 ketika kartu tidak ditemukan")
-    void testGetSubscriptionsByCard_NotFound() {
-        when(creditCardRepository.findById(999L)).thenReturn(Optional.empty());
+    @DisplayName("Create subscription berhasil ketika kartu milik nasabah")
+    void testCreateSubscription_Success() {
+        when(creditCardRepository.findById(10L)).thenReturn(Optional.of(card1));
+        when(subscriptionRepository.save(any(Subscription.class))).thenAnswer(inv -> {
+            Subscription s = inv.getArgument(0);
+            s.setId(200L);
+            return s;
+        });
 
-        assertThrows(ResourceNotFoundException.class, () ->
-                subscriptionService.getSubscriptionsByCard(999L, 1L, null)
+        com.bri.cardsmarttrack.dto.request.CreateSubscriptionRequest req =
+                com.bri.cardsmarttrack.dto.request.CreateSubscriptionRequest.builder()
+                        .serviceName("Disney+ Hotstar")
+                        .category(SubscriptionCategory.ENTERTAINMENT)
+                        .billingAmount(new BigDecimal("65000.00"))
+                        .billingPeriod(SubscriptionBillingPeriod.MONTHLY)
+                        .build();
+
+        SubscriptionResponse res = subscriptionService.createSubscription(10L, 1L, req);
+
+        assertNotNull(res);
+        assertEquals("Disney+ Hotstar", res.getServiceName());
+        assertEquals(SubscriptionStatus.ACTIVE, res.getStatus());
+        verify(subscriptionRepository, times(1)).save(any(Subscription.class));
+    }
+
+    @Test
+    @DisplayName("Subscribe kembali berhasil mengubah status INACTIVE menjadi ACTIVE")
+    void testSubscribe_Success() {
+        when(subscriptionRepository.findByIdWithCardAndCustomer(101L))
+                .thenReturn(Optional.of(inactiveSubscription));
+        when(subscriptionRepository.save(any(Subscription.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        SubscriptionResponse response = subscriptionService.subscribe(101L, 1L);
+
+        assertNotNull(response);
+        assertEquals(SubscriptionStatus.ACTIVE, response.getStatus());
+        assertNull(response.getUnsubscribedAt());
+        verify(subscriptionRepository, times(1)).save(inactiveSubscription);
+    }
+
+    @Test
+    @DisplayName("Subscribe kembali melempar 409 Conflict ketika sudah ACTIVE")
+    void testSubscribe_AlreadyActive_ThrowsConflictException() {
+        when(subscriptionRepository.findByIdWithCardAndCustomer(100L))
+                .thenReturn(Optional.of(activeSubscription));
+
+        assertThrows(ConflictException.class, () ->
+                subscriptionService.subscribe(100L, 1L)
         );
+        verify(subscriptionRepository, never()).save(any());
     }
 }
